@@ -167,7 +167,7 @@ export function apply(ctx: any, config: Config): void {
         },
         required: ['waited_ms', 'elapsed_until', 'note'],
       },
-      render: (_args, value) => [{
+      render: (_args: unknown, value: { waited_ms: number; elapsed_until: string; note: string }) => [{
         type: 'text',
         text: `Waited ${value.waited_ms}ms (until ${value.elapsed_until}); ${value.note}`,
       }],
