@@ -100,7 +100,7 @@ export function apply(ctx: any, config: Config): void {
         },
         required: ['scheduled', 'due_at', 'delay_ms', 'pending'],
       },
-      render: (_args, value) => [{
+      render: (_args: unknown, value: { scheduled: boolean; due_at: string; delay_ms: number; pending: number }) => [{
         type: 'text',
         text: `Reminder scheduled: will wake in ${value.delay_ms}ms (due ${value.due_at}); ${value.pending} reminder(s) pending.`,
       }],
