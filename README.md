@@ -31,7 +31,12 @@ Tell the agent:
 The agent calls the tool and returns the expected trigger time; when the delay
 elapses it wakes up and delivers the reminder in the same conversation. No
 matter how many other turns happen in between (including new messages you send),
-the reminder arrives on time.
+the reminder arrives on time. Multiple reminders per conversation are
+supported — each has its own `reminder_id`.
+
+> **Durability note:** reminders live in process memory. They survive agent
+> turns (and plugin reloads cancel them cleanly), but **restarting the DSH
+> host cancels all pending reminders**. Durable persistence is on the roadmap.
 
 ### Tool parameters
 
@@ -109,6 +114,13 @@ Key points:
 
 `wait` interruption: have the agent call `wait` for 40 s, press stop mid-way →
 the turn ends immediately instead of hanging for the full 40 s.
+
+## Roadmap
+
+- `cancel_reminder` / `list_reminders` tools (per-agent, by `reminder_id`)
+- Durable reminder store (`reminders.json` + re-hydrated timers on boot), so
+  reminders survive a DSH host restart
+- Pending-reminder cap
 
 ## License
 

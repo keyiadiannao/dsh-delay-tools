@@ -29,7 +29,11 @@ dsh plugin add github:keyiadiannao/dsh-delay-tools#master
 
 agent 会调用工具并返回预计触发时间；到期后 agent 自动醒来，在同一个会话中
 把提醒内容发给你。期间无论发生过多少轮其他对话（包括你中途插入的新消息），
-提醒都会准时送达。
+提醒都会准时送达。同一会话支持多个提醒，每个有独立的 `reminder_id`。
+
+> **持久性说明：** 提醒存在进程内存中。它们能跨 agent turn 存活（插件重载时
+> 会被干净地取消），但**重启 DSH 主进程会取消所有 pending 提醒**。持久化存储
+> 在路线图中。
 
 ### 工具参数
 
@@ -105,6 +109,12 @@ agent (idle) 打开新 turn → 同一会话内回复提醒
 
 `wait` 的打断验证：让 agent 调用 `wait` 设 40 秒，中途点停止生成 →
 确认 turn 立即终止而非挂满 40 秒。
+
+## 路线图
+
+- `cancel_reminder` / `list_reminders` 工具（按 agent、按 `reminder_id`）
+- 持久化提醒存储（`reminders.json` + 启动时重建定时器），让提醒跨 DSH 重启存活
+- pending 提醒数量上限
 
 ## License
 
