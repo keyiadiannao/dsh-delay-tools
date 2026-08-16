@@ -1,108 +1,116 @@
 # dsh-delay-tools
 
-延迟唤醒：让 agent 在 **N 分钟后、在同一个会话里** 主动醒来并向你发消息。
+Delay utilities for DeepSeek Harness: **two tools sharing one core concept — delay**:
 
-> 「3 分钟后提醒我提交实验记录」这类需求，用普通后台 shell 定时器做不到——
-> DSH 的后台任务绑定 agent turn 的生命周期，turn 一结束就被 teardown 杀掉
-> （`ctx.jobs` 的 owner-scoped dispose，进程以 `0xC000013A` 退出，且取消会被误报成
-> 完成）。本插件用**宿主级定时器**（不绑定任何 turn）持有到期时间，再用官方
-> `followup()` 唤醒通道把消息投回**同一会话**。
+| Mode | Tool | What the agent does while waiting | User messages during the wait | Typical use |
+|---|---|---|---|---|
+| Wake | `schedule_reminder` | keeps working; wakes up in the SAME conversation when due | handled normally | "remind me in 3 minutes about X" |
+| Gate | `wait` | blocks the current turn | queued, processed after | "wait 30 seconds, then continue", cooldowns |
 
-## 安装
+## Why
+
+A plain background shell timer cannot do "wake me in 3 minutes": DSH background
+jobs are bound to the agent turn's lifecycle and get torn down when the turn
+ends (`ctx.jobs` owner-scoped dispose — the process exits with `0xC000013A` and
+the cancel is misreported as completed). This plugin uses a **host-level timer**
+(not bound to any turn) plus the official `followup()` wake channel to deliver
+the message back into the **same conversation**.
+
+## Install
 
 ```bash
 dsh plugin add github:keyiadiannao/dsh-delay-tools#master
 ```
 
-## 用法
+## Usage
 
-对 agent 说：
+Tell the agent:
 
 > 请调用 schedule_reminder 工具，设置 30 秒后提醒我"该喝水了"。
+> (call schedule_reminder, remind me in 30 seconds to drink water)
 
-agent 会调用工具并返回预计触发时间；到期后 agent 自动醒来，在同一个会话中
-把提醒内容发给你。期间无论发生过多少轮其他对话（包括你中途插入的新消息），
-提醒都会准时送达。
+The agent calls the tool and returns the expected trigger time; when the delay
+elapses it wakes up and delivers the reminder in the same conversation. No
+matter how many other turns happen in between (including new messages you send),
+the reminder arrives on time.
 
-### 工具参数
+### Tool parameters
 
-| 参数 | 类型 | 必填 | 说明 |
+| Param | Type | Required | Description |
 |---|---|---|---|
-| `delay_ms` | number | 否 | 延迟毫秒数，默认 60000；夹取在 `minDelayMs`..`maxDelayMs` |
-| `message` | string | 是 | 到期后 agent 要投递给你的文本 |
+| `delay_ms` | number | no | Delay in ms, default 60000; clamped to `minDelayMs`..`maxDelayMs` |
+| `message` | string | yes | The text the agent delivers to you when the delay elapses |
 
-### 返回值
+### Return value
 
-`scheduled` / `due_at` / `delay_ms` / `pending`（该 agent 尚在等待中的提醒数）。
+`scheduled` / `due_at` / `delay_ms` / `pending` (how many reminders are still
+pending for this agent).
 
-## 第二种模式：`wait`（闸门）
+## The second mode: `wait` (timed gate)
 
-`schedule_reminder` 是「到点唤醒，期间 agent 继续干活」；`wait` 是相反的语义——
-**阻塞当前 turn**，计时结束后 agent 才继续手上的工作：
+`schedule_reminder` means "wake later, keep working meanwhile"; `wait` is the
+opposite — it **blocks the current turn**, and the agent only continues after
+the countdown:
 
 > 请调用 wait 工具等待 30 秒，然后再继续。
+> (call wait for 30 seconds, then continue)
 
-| 模式 | 工具 | 等待期间 agent | 等待期间用户消息 | 典型用途 |
-|---|---|---|---|---|
-| 提醒（wake） | `schedule_reminder` | 可继续处理其他消息 | 照常处理 | 「3 分钟后提醒我 X」 |
-| 闸门（gate） | `wait` | 无法做任何事（turn 阻塞） | 进入队列，计时结束后处理 | 「等 30 秒再继续」「冷却时间」 |
+`wait` takes only `delay_ms` and returns `waited_ms` / `elapsed_until` / `note`.
+Messages you send during the gate go into the inbox queue (the composer shows
+"N 条排队消息" / "N queued messages") and are processed after the countdown —
+which makes it a reliable trigger for testing queue/merge plugins such as
+[dsh-queue-merge](https://github.com/keyiadiannao/dsh-queue-merge).
 
-`wait` 的参数只有 `delay_ms`；返回 `waited_ms` / `elapsed_until` / `note`。
-闸门期间用户发来的消息会排进 inbox（composer 显示「N 条排队消息」），
-计时结束后自动进入下一轮处理——这使它成为测试消息队列/合并类插件
-（如 dsh-queue-merge）的可靠触发器。
+`wait` observes `exec.signal` per the tools contract: pressing the **stop**
+button mid-wait interrupts the gate immediately (returns
+`note: 'Wait interrupted by the user (stop).'`) instead of hanging for the full
+delay.
 
-`wait` 遵守工具契约观察 `exec.signal`：等待期间点右下角的**停止生成**会立即
-中断闸门（返回 `note: 'Wait interrupted by the user (stop).'`），不会挂满整个
-delay。
-
-## 配置
+## Configuration
 
 ```yaml
 - id: dsh-delay-tools
   config:
-    defaultDelayMs: 60000       # 未传 delay_ms 时的默认延迟
-    maxDelayMs: 3600000         # 单次提醒/等待延迟上限
-    minDelayMs: 1000            # 最小延迟，防止误触发瞬时重入
+    defaultDelayMs: 60000       # default delay when delay_ms is omitted
+    maxDelayMs: 3600000         # upper bound for a single delay
+    minDelayMs: 1000            # lower bound, guards against instant re-entry
 ```
 
-| 配置项 | 默认 | 说明 |
-|---|---|---|
-| `defaultDelayMs` | 60000 | 未传 `delay_ms` 时的默认延迟 |
-| `maxDelayMs` | 3600000 | 单次提醒延迟上限 |
-| `minDelayMs` | 1000 | 最小延迟，防止误触发瞬时重入 |
-
-## 原理
+## How it works
 
 ```
-user: "3 分钟后告诉我 X"
+user: "3 分钟后告诉我 X"  ("tell me X in 3 minutes")
   ↓
 schedule_reminder(delay_ms, message)
   ↓
-host setTimeout(delay).unref()      ← 不绑定任何 turn 生命周期
-  ↓ (turn 结束、teardown、后续多轮对话都不影响它)
-due → agent.followup(userMessage)   ← 官方唤醒通道
+host setTimeout(delay).unref()      ← not bound to any turn lifetime
+  ↓ (turn ends, teardown, further turns — none of it matters)
+due → agent.followup(userMessage)   ← official wake channel
   ↓
-agent (idle) 打开新 turn → 同一会话内回复提醒
+agent (idle) opens a new turn → replies in the same conversation
 ```
 
-关键点：
+Key points:
 
-- 定时器创建在**插件 apply 的作用域**，不是 `ctx.jobs`（后者随 owner turn 销毁）。
-- `setTimeout().unref()` 让进程在只剩定时器时也能正常退出，不阻塞 DSH 生命周期。
-- `agent.followup()` 是运行时官方的 wake 通道：agent 空闲时提交 wake 必定打开
-  新的 turn 边界（见 runtime-types 注释），因此跨轮次唤醒是受支持的语义。
+- The timer lives in the **plugin apply scope**, not `ctx.jobs` (which dies
+  with the owning turn).
+- `setTimeout().unref()` lets the process exit normally when only the timer is
+  left — it never blocks the DSH lifecycle.
+- `agent.followup()` is the runtime's official wake channel: a wake submitted
+  while the agent is idle always opens a new turn boundary (see the runtime-types
+  comments), so cross-turn waking is a supported semantic.
 
-## 测试
+## Testing
 
-`tests/` 下含配置校验测试（`pnpm test`）。端到端验证方式：
+`tests/` holds config-validation tests (`pnpm test`). End-to-end verification:
 
-1. 新会话 → 让 agent 调用 `schedule_reminder` 设 30 秒提醒；
-2. 等 agent 完成当前回合后**再发一条打断消息**；
-3. ~30 秒后确认 agent 醒来并送达提醒 → 跨轮次存活成立。
+1. New session → have the agent call `schedule_reminder` with a 30 s delay;
+2. After the agent finishes its turn, **send an interrupting message**;
+3. ~30 s later the agent wakes and delivers the reminder → cross-turn survival
+   confirmed.
 
-`wait` 的打断验证：让 agent 调用 `wait` 设 40 秒，中途点停止生成 →
-确认 turn 立即终止而非挂满 40 秒。
+`wait` interruption: have the agent call `wait` for 40 s, press stop mid-way →
+the turn ends immediately instead of hanging for the full 40 s.
 
 ## License
 
