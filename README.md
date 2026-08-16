@@ -26,8 +26,7 @@ dsh plugin add github:keyiadiannao/dsh-delay-tools#master
 
 Tell the agent:
 
-> 请调用 schedule_reminder 工具，设置 30 秒后提醒我"该喝水了"。
-> (call schedule_reminder, remind me in 30 seconds to drink water)
+> Call the `schedule_reminder` tool and remind me in 30 seconds to drink water.
 
 The agent calls the tool and returns the expected trigger time; when the delay
 elapses it wakes up and delivers the reminder in the same conversation. No
@@ -52,13 +51,12 @@ pending for this agent).
 opposite — it **blocks the current turn**, and the agent only continues after
 the countdown:
 
-> 请调用 wait 工具等待 30 秒，然后再继续。
-> (call wait for 30 seconds, then continue)
+> Call the `wait` tool for 30 seconds, then continue.
 
 `wait` takes only `delay_ms` and returns `waited_ms` / `elapsed_until` / `note`.
 Messages you send during the gate go into the inbox queue (the composer shows
-"N 条排队消息" / "N queued messages") and are processed after the countdown —
-which makes it a reliable trigger for testing queue/merge plugins such as
+"N queued messages") and are processed after the countdown — which makes it a
+reliable trigger for testing queue/merge plugins such as
 [dsh-queue-merge](https://github.com/keyiadiannao/dsh-queue-merge).
 
 `wait` observes `exec.signal` per the tools contract: pressing the **stop**
@@ -79,7 +77,7 @@ delay.
 ## How it works
 
 ```
-user: "3 分钟后告诉我 X"  ("tell me X in 3 minutes")
+user: "tell me X in 3 minutes"
   ↓
 schedule_reminder(delay_ms, message)
   ↓
