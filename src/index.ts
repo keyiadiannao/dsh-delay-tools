@@ -172,17 +172,29 @@ export function apply(ctx: any, config: Config): void {
         text: `Waited ${value.waited_ms}ms (until ${value.elapsed_until}); ${value.note}`,
       }],
     },
-    async execute(args: { delay_ms?: number }) {
+    async execute(args: { delay_ms?: number }, exec: { signal?: AbortSignal }) {
       const delay = clampDelay(args.delay_ms, config)
       const start = Date.now()
       // Blocks the agent turn for the full delay. Not bound to ctx.jobs, so it
       // is immune to turn teardown — but unlike schedule_reminder it is awaited
       // inline, so the agent cannot do anything else until it resolves.
-      await new Promise((resolve) => setTimeout(resolve, delay))
+      // The tools contract requires async work to observe `exec.signal`: the
+      // stop button aborts the turn's signal, and the registry cannot hard-kill
+      // same-process code — so without this listener the wait would hang until
+      // the delay elapses and the user could NOT interrupt it.
+      await new Promise<void>((resolve) => {
+        if (exec.signal?.aborted === true) { resolve(); return }
+        const timer = setTimeout(resolve, delay)
+        exec.signal?.addEventListener('abort', () => {
+          clearTimeout(timer)
+          resolve()
+        }, { once: true })
+      })
+      const aborted = exec.signal?.aborted === true
       return {
         waited_ms: Date.now() - start,
         elapsed_until: new Date().toISOString(),
-        note: 'Delay elapsed; continue your current task.',
+        note: aborted ? 'Wait interrupted by the user (stop).' : 'Delay elapsed; continue your current task.',
       }
     },
   }, 'dsh-schedule-reminder: wait tool')
