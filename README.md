@@ -35,6 +35,23 @@ agent 会调用工具并返回预计触发时间；到期后 agent 自动醒来�
 
 `scheduled` / `due_at` / `delay_ms` / `pending`（该 agent 尚在等待中的提醒数）。
 
+## 第二种模式：`wait`（闸门）
+
+`schedule_reminder` 是「到点唤醒，期间 agent 继续干活」；`wait` 是相反的语义——
+**阻塞当前 turn**，计时结束后 agent 才继续手上的工作：
+
+> 请调用 wait 工具等待 30 秒，然后再继续。
+
+| 模式 | 工具 | 等待期间 agent | 等待期间用户消息 | 典型用途 |
+|---|---|---|---|---|
+| 提醒（wake） | `schedule_reminder` | 可继续处理其他消息 | 照常处理 | 「3 分钟后提醒我 X」 |
+| 闸门（gate） | `wait` | 无法做任何事（turn 阻塞） | 进入队列，计时结束后处理 | 「等 30 秒再继续」「冷却时间」 |
+
+`wait` 的参数只有 `delay_ms`；返回 `waited_ms` / `elapsed_until` / `note`。
+闸门期间用户发来的消息会排进 inbox（composer 显示「N 条排队消息」），
+计时结束后自动进入下一轮处理——这使它成为测试消息队列/合并类插件
+（如 dsh-queue-merge）的可靠触发器。
+
 ## 配置
 
 | 配置项 | 默认 | 说明 |
