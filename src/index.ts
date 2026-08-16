@@ -67,15 +67,18 @@ export function apply(ctx: any, config: Config): void {
       + 'official agent wake channel, so the reminder survives even after this turn ends. '
       + 'The agent will resume and deliver `message` to you after `delay_ms`.',
     parameters: {
-      delay_ms: {
-        type: 'number',
-        description: `Delay in milliseconds before waking (min ${config.minDelayMs}, max ${config.maxDelayMs}; default ${config.defaultDelayMs}).`,
+      type: 'object',
+      properties: {
+        delay_ms: {
+          type: 'number',
+          description: `Delay in milliseconds before waking (min ${config.minDelayMs}, max ${config.maxDelayMs}; default ${config.defaultDelayMs}).`,
+        },
+        message: {
+          type: 'string',
+          description: 'The text the agent should deliver to you when the delay elapses. Write it as a direct message to the user.',
+        },
       },
-      message: {
-        type: 'string',
-        required: true,
-        description: 'The text the agent should deliver to you when the delay elapses. Write it as a direct message to the user.',
-      },
+      required: ['message'],
     },
     output: {
       schema: {
