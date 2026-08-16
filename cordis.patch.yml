@@ -1,0 +1,4 @@
+# dsh-schedule-reminder bundle patch: mount into the profile.
+- insert:
+    - id: dsh-schedule-reminder
+      name: 'dsh-schedule-reminder'
