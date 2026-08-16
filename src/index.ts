@@ -82,11 +82,12 @@ export function apply(ctx: any, config: Config): void {
         type: 'object',
         additionalProperties: false,
         properties: {
-          scheduled: { type: 'boolean', required: true },
-          due_at: { type: 'string', required: true },
-          delay_ms: { type: 'number', required: true },
-          pending: { type: 'number', required: true },
+          scheduled: { type: 'boolean' },
+          due_at: { type: 'string' },
+          delay_ms: { type: 'number' },
+          pending: { type: 'number' },
         },
+        required: ['scheduled', 'due_at', 'delay_ms', 'pending'],
       },
       render: (_args, value) => [{
         type: 'text',
