@@ -1,5 +1,5 @@
 /**
- * dsh-schedule-reminder browser half.
+ * dsh-delay-tools browser half.
  *
  * No UI of its own: the plugin is purely a host-side tool (schedule_reminder)
  * that wakes the agent in the same conversation. This file exists so the

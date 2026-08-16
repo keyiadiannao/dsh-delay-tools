@@ -1,4 +1,4 @@
-# dsh-schedule-reminder bundle patch: mount into the profile.
+# dsh-delay-tools bundle patch: mount into the profile.
 - insert:
-    - id: dsh-schedule-reminder
-      name: 'dsh-schedule-reminder'
+    - id: dsh-delay-tools
+      name: 'dsh-delay-tools'

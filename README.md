@@ -1,4 +1,4 @@
-# dsh-schedule-reminder
+# dsh-delay-tools
 
 延迟唤醒：让 agent 在 **N 分钟后、在同一个会话里** 主动醒来并向你发消息。
 
@@ -11,7 +11,7 @@
 ## 安装
 
 ```bash
-dsh plugin add github:keyiadiannao/dsh-schedule-reminder#master
+dsh plugin add github:keyiadiannao/dsh-delay-tools#master
 ```
 
 ## 用法
@@ -59,7 +59,7 @@ delay。
 ## 配置
 
 ```yaml
-- id: dsh-schedule-reminder
+- id: dsh-delay-tools
   config:
     defaultDelayMs: 60000       # 未传 delay_ms 时的默认延迟
     maxDelayMs: 3600000         # 单次提醒/等待延迟上限

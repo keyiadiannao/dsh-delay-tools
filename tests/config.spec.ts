@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { Config } from '../src/index.ts'
 
-describe('dsh-schedule-reminder config', () => {
+describe('dsh-delay-tools config', () => {
   it('defaults to a 60s delay with 1h ceiling', () => {
     const cfg = Config({})
     expect(cfg.defaultDelayMs).toBe(60_000)

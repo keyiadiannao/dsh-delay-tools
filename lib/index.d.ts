@@ -1,6 +1,6 @@
 import z from "@deepseek-ai/schemastery";
 //#region src/index.d.ts
-declare const name = "dsh-schedule-reminder";
+declare const name = "dsh-delay-tools";
 declare const inject: string[];
 /** Plugin configuration. */
 interface Config {

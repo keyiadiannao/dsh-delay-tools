@@ -1,3 +1,3 @@
 import { clientBundle } from './tsdown.client.ts'
 
-export default clientBundle('dsh-schedule-reminder')
+export default clientBundle('dsh-delay-tools')

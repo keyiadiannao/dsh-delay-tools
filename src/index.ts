@@ -1,5 +1,5 @@
 /**
- * dsh-schedule-reminder — host half.
+ * dsh-delay-tools — host half.
  *
  * Delayed wake-up for DeepSeek Harness. The core problem this solves: a plain
  * `pwsh ... run_in_background` timer is killed when its owning agent turn is
@@ -19,13 +19,13 @@
  *     ↓
  *   agent (idle) opens a new turn → replies in the same conversation
  *
- * @module dsh-schedule-reminder
+ * @module dsh-delay-tools
  */
 
 import z from '@deepseek-ai/schemastery'
 import { createUserMessage } from '@deepseek-ai/dsh-llm'
 
-export const name = 'dsh-schedule-reminder'
+export const name = 'dsh-delay-tools'
 
 export const inject = ['tools']
 
@@ -47,7 +47,7 @@ export const Config: z<Config> = z.object({
 })
 
 /** Source marker for the synthetic wake message (visible in the transcript). */
-const REMINDER_SOURCE = { kind: 'plugin', plugin: 'dsh-schedule-reminder' } as const
+const REMINDER_SOURCE = { kind: 'plugin', plugin: 'dsh-delay-tools' } as const
 
 /** Track live reminders so a second call can report how many are pending. */
 const pending = new Map<string, { dueAt: number; text: string }>()
@@ -137,7 +137,7 @@ export function apply(ctx: any, config: Config): void {
         pending: pendingCount(agentId),
       }
     },
-  }, 'dsh-schedule-reminder: schedule_reminder tool')
+  }, 'dsh-delay-tools: schedule_reminder tool')
 
   ctx.tools.register({
     name: 'wait',
@@ -197,5 +197,5 @@ export function apply(ctx: any, config: Config): void {
         note: aborted ? 'Wait interrupted by the user (stop).' : 'Delay elapsed; continue your current task.',
       }
     },
-  }, 'dsh-schedule-reminder: wait tool')
+  }, 'dsh-delay-tools: wait tool')
 }
