@@ -52,7 +52,19 @@ agent 会调用工具并返回预计触发时间；到期后 agent 自动醒来�
 计时结束后自动进入下一轮处理——这使它成为测试消息队列/合并类插件
 （如 dsh-queue-merge）的可靠触发器。
 
+`wait` 遵守工具契约观察 `exec.signal`：等待期间点右下角的**停止生成**会立即
+中断闸门（返回 `note: 'Wait interrupted by the user (stop).'`），不会挂满整个
+delay。
+
 ## 配置
+
+```yaml
+- id: dsh-schedule-reminder
+  config:
+    defaultDelayMs: 60000       # 未传 delay_ms 时的默认延迟
+    maxDelayMs: 3600000         # 单次提醒/等待延迟上限
+    minDelayMs: 1000            # 最小延迟，防止误触发瞬时重入
+```
 
 | 配置项 | 默认 | 说明 |
 |---|---|---|
@@ -88,3 +100,10 @@ agent (idle) 打开新 turn → 同一会话内回复提醒
 1. 新会话 → 让 agent 调用 `schedule_reminder` 设 30 秒提醒；
 2. 等 agent 完成当前回合后**再发一条打断消息**；
 3. ~30 秒后确认 agent 醒来并送达提醒 → 跨轮次存活成立。
+
+`wait` 的打断验证：让 agent 调用 `wait` 设 40 秒，中途点停止生成 →
+确认 turn 立即终止而非挂满 40 秒。
+
+## License
+
+MIT

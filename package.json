@@ -1,7 +1,26 @@
 {
   "name": "dsh-schedule-reminder",
   "version": "0.1.0",
-  "description": "Delayed wake-up for DeepSeek Harness: schedule a reminder N minutes out and the agent wakes in the SAME conversation to reply — unlike cron schedulers that spawn fresh sessions. Host-level timer + official agent.followup() wake channel.",
+  "description": "Delayed wake-up for DeepSeek Harness: schedule a reminder N minutes out and the agent wakes in the SAME conversation to reply — unlike cron schedulers that spawn fresh sessions. Also provides a wait (timed gate) tool that blocks the current turn and is interruptible via the stop button. Host-level timer + official agent.followup() wake channel.",
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "reminder",
+    "timer",
+    "scheduler",
+    "wait",
+    "ai-agent",
+    "llm"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/keyiadiannao/dsh-schedule-reminder.git"
+  },
+  "homepage": "https://github.com/keyiadiannao/dsh-schedule-reminder",
+  "bugs": {
+    "url": "https://github.com/keyiadiannao/dsh-schedule-reminder/issues"
+  },
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
