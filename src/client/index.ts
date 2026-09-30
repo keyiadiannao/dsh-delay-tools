@@ -4,8 +4,12 @@
  * No UI of its own: the plugin is purely a host-side tool (schedule_reminder)
  * that wakes the agent in the same conversation. This file exists so the
  * client bundle builds; the host tool works without any client contribution.
+ *
+ * Because nothing is contributed, this row injects no other client row
+ * (`package.json` declares an empty `dsh.client.inject`) — the three names it
+ * used to list were removed from DSH or were never injectable rows.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 
 /** Required services (empty: nothing injected). */
 export const inject = [] as const

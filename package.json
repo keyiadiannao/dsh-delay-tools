@@ -1,6 +1,6 @@
 {
   "name": "dsh-delay-tools",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Delayed wake-up for DeepSeek Harness: schedule a reminder N minutes out and the agent wakes in the SAME conversation to reply — unlike cron schedulers that spawn fresh sessions. Also provides a wait (timed gate) tool that blocks the current turn and is interruptible via the stop button. Host-level timer + official agent.followup() wake channel.",
   "keywords": [
     "deepseek-harness",
@@ -44,11 +44,7 @@
     },
     "client": {
       "platform": "web",
-      "inject": [
-        "@deepseek-ai/dsh-client-runtime",
-        "@deepseek-ai/dsh-client-ui-slots",
-        "@deepseek-ai/dsh-client-locale"
-      ]
+      "inject": []
     }
   },
   "scripts": {
@@ -58,9 +54,6 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-client-locale": ">=0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-runtime": ">=0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-slots": ">=0.1.0-rc.6",
     "@deepseek-ai/dsh-llm": ">=0.1.0-rc.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
@@ -75,9 +68,7 @@
     "@types/node": "^24.0.0",
     "@types/react": "~18.3.1",
     "@types/react-dom": "~18.3.1",
-    "@deepseek-ai/dsh-client-locale": ">=0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-runtime": ">=0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-slots": ">=0.1.0-rc.6",
+    "@deepseek-ai/cordis": "^4.0.1",
     "@deepseek-ai/dsh-llm": ">=0.1.0-rc.6",
     "@deepseek-ai/schemastery": "^3.18.1",
     "react": "^18.2.0",
